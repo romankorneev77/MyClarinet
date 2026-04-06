@@ -34,13 +34,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .nb.on .nb-ru span{font-weight:700}
 .na{font-size:11px;color:#bbb;margin-left:auto}
 .nb.on .na{color:#185FA5;opacity:.7}
-.nb{display:flex;align-items:center;width:100%;padding:5px 8px 5px 10px;text-align:left;background:none;border:none;cursor:pointer;color:#333;gap:0;border-bottom:1px solid rgba(0,0,0,0.06)}
+.nb{display:flex;align-items:center;width:100%;padding:5px 8px 5px 10px;text-align:left;background:none;border:none;cursor:pointer;color:#333;gap:0;border-bottom:1px solid rgba(0,0,0,0.06);position:relative}
 .nb-staff{flex-shrink:0;width:101px;display:flex;align-items:center;justify-content:flex-start;gap:3px}
 .nb-text{display:flex;align-items:center;flex:1}
 .nb-notes{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;line-height:1.1;flex:1}
 .nb-main{font-size:26px;font-weight:400;line-height:1}
 .nb-alt{font-size:26px;font-weight:400;line-height:1}
-.nb-ru{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;line-height:1.2;padding-right:10px}
+.nb-ru{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;line-height:1.2;padding-right:10px;gap:1px}
 .nb-ru span{font-size:16px;letter-spacing:.01em}
 .right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 12px 4px;background:#f5f4f0;overflow:hidden;gap:4px;height:100%}
 .nt{font-size:28px;font-weight:500;color:#222;line-height:1;height:40px;min-height:40px;max-height:40px;text-align:center;display:flex;align-items:center;justify-content:center;gap:16px}
@@ -86,7 +86,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .app-title-prefix { display: none; }
   .app-version{ font-size: 9px; }
   .app-copy   { font-size: 8px; }
-  .about-btn  { width: 18px; height: 18px; font-size: 10px; }
+  .about-btn  { display: none; }
 
   /* Основная раскладка: меню 40%, схема 60% */
   .app-body { flex-direction: row; overflow: hidden; }
@@ -205,6 +205,61 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .tuner-freq  { font-size: 9px !important; }
   .tuner-btn   { font-size: 10px !important; padding: 2px 8px !important; }
 }
+/* ── КНОПКА МЕНЮ ─────────────────────────────────────────────────── */
+.menu-btn{width:28px;height:28px;border-radius:6px;border:1.5px solid #c0bdb8;background:none;color:#888;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;flex-shrink:0}
+.menu-btn:hover{border-color:#185FA5;color:#185FA5;background:#f0f4fa}
+
+/* ── БОКОВОЕ МЕНЮ ────────────────────────────────────────────────── */
+.side-menu{display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.3)}
+.side-menu.open{display:flex;justify-content:flex-end}
+.side-menu-panel{width:260px;background:#f8f7f4;border-left:1px solid #e0ddd8;display:flex;flex-direction:column;height:100%;box-shadow:-4px 0 20px rgba(0,0,0,0.1);animation:slideIn .2s ease}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.side-menu-header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:38px;min-height:38px;border-bottom:1px solid #e0ddd8}
+.side-menu-close{background:none;border:none;font-size:20px;color:#999;cursor:pointer;padding:0;line-height:1;transition:color .15s}
+.side-menu-close:hover{color:#185FA5}
+.side-menu-items{padding:8px 0;flex:1;overflow-y:auto}
+.side-menu-item{display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;color:#333;text-align:left;transition:background .12s}
+.side-menu-item:hover{background:#eceae5}
+.smi-keys{margin-left:auto;font-size:12px;color:#aaa;letter-spacing:.02em;flex-shrink:0}
+.side-menu-section{padding:12px 16px 4px;font-size:10px;font-weight:600;color:#999;letter-spacing:.07em;text-transform:uppercase}
+.side-menu-divider{height:1px;background:#e0ddd8;margin:6px 16px}
+
+/* ── РЕЖИМ ГАММ: скрытие энгармоников ───────────────────────────── */
+/* По умолчанию: энгармоники видны, бейджи скрыты */
+.scale-deg{display:none;min-width:20px;height:20px;border-radius:10px;font-size:11px;font-weight:700;color:#fff;background:#185FA5;line-height:20px;text-align:center;padding:0 5px}
+.sd-desk{flex-shrink:0;margin-left:6px}
+.sd-mob{flex-shrink:0;margin:0 4px}
+
+/* Когда активен режим гаммы (.scale-mode на .left): */
+/* Приглушаем содержимое нот вне гаммы (фон остаётся) */
+.scale-mode .nb .nb-staff{opacity:0.25}
+.scale-mode .nb .nb-text{opacity:0.25}
+.scale-mode .nb.scale-note .nb-staff{opacity:1}
+.scale-mode .nb.scale-note .nb-text{opacity:1}
+/* Десктоп: скрыть энгармоники везде, показать бейдж между латинским и русским */
+.scale-mode .nb.scale-note .enh{display:none !important}
+.scale-mode .nb.scale-note .nb-staff{width:52px !important}
+.scale-mode .nb.scale-note .sd-desk{display:inline-block}
+.scale-mode .nb.scale-note .sd-mob{display:none}
+.scale-mode .nb.scale-note{box-shadow:inset 4px 0 0 #185FA5 !important}
+.scale-mode .nb.scale-accent{box-shadow:inset 4px 0 0 #E24B4A !important}
+.scale-mode .nb.scale-accent .scale-deg{background:#E24B4A}
+
+/* Индикатор активной гаммы */
+.scale-indicator{display:none;padding:6px 12px;background:#185FA5;color:#fff;font-size:11px;font-weight:600;text-align:center;letter-spacing:.03em;cursor:pointer;border:none;width:100%;flex-shrink:0}
+.scale-indicator:hover{background:#1a6fbe}
+.scale-indicator.active{display:block}
+
+/* ── МОБИЛЬНОЕ МЕНЮ ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .side-menu-panel{width:100% !important;border-left:none !important}
+  .menu-btn{width:24px;height:24px}
+  .menu-btn svg{width:14px;height:14px}
+  /* Мобильный режим гамм: бейдж между станом и названием */
+  .scale-mode .nb.scale-note .nb-staff{width:48px !important;min-width:48px !important}
+  .scale-mode .nb.scale-note .sd-desk{display:none !important}
+  .scale-mode .nb.scale-note .sd-mob{display:inline-block !important}
+}
 </style>
 </head>
 <body>
@@ -212,11 +267,71 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="app-header">
     <div style="display:flex;align-items:center;gap:8px">
       <span class="app-title"><span class="app-title-prefix">Мой Кларнет: </span>Аппликатура кларнета B♭</span>
-      <button class="about-btn" onclick="document.getElementById('ABOUT_MODAL').style.display='flex'" title="О приложении">ℹ</button>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
-      <span class="app-copy">© 2026 myclarinet.ru</span>
-      <span class="app-version">v.14</span>
+      <button class="menu-btn" onclick="toggleMenu()" title="Меню">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect y="3" width="18" height="2" rx="1" fill="currentColor"/><rect y="8" width="18" height="2" rx="1" fill="currentColor"/><rect y="13" width="18" height="2" rx="1" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+  <!-- Боковое меню -->
+  <div id="SIDE_MENU" class="side-menu" onclick="if(event.target===this)closeMenu()">
+    <div class="side-menu-panel">
+      <div class="side-menu-header">
+        <span style="font-size:13px;font-weight:600;color:#555">Меню</span>
+        <button class="side-menu-close" onclick="closeMenu()">✕</button>
+      </div>
+      <div class="side-menu-items">
+        <button class="side-menu-item" onclick="closeMenu();goHome()">
+          <span style="font-size:16px;opacity:0.7">🏠</span>
+          <span>Главный экран</span>
+        </button>
+        <div class="side-menu-section">Мажорные гаммы — диезные</div>
+        <button class="side-menu-item" onclick="closeMenu();showScale('C_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>До мажор</span><span class="smi-keys">0♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('G_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Соль мажор</span><span class="smi-keys">1♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('D_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ре мажор</span><span class="smi-keys">2♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('A_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ля мажор</span><span class="smi-keys">3♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('E_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ми мажор</span><span class="smi-keys">4♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('B_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Си мажор</span><span class="smi-keys">5♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Fs_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Фа-диез мажор</span><span class="smi-keys">6♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Cs_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>До-диез мажор</span><span class="smi-keys">7♯</span></button>
+        <div class="side-menu-section">Мажорные гаммы — бемольные</div>
+        <button class="side-menu-item" onclick="closeMenu();showScale('C_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>До мажор</span><span class="smi-keys">0♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('F_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Фа мажор</span><span class="smi-keys">1♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Bb_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Си-бемоль мажор</span><span class="smi-keys">2♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Eb_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ми-бемоль мажор</span><span class="smi-keys">3♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Ab_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ля-бемоль мажор</span><span class="smi-keys">4♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Db_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ре-бемоль мажор</span><span class="smi-keys">5♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Gb_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Соль-бемоль мажор</span><span class="smi-keys">6♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Cb_major')"><span style="font-size:16px;opacity:0.7">🎵</span><span>До-бемоль мажор</span><span class="smi-keys">7♭</span></button>
+        <div class="side-menu-section">Минорные гаммы — диезные</div>
+        <button class="side-menu-item" onclick="closeMenu();showScale('A_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ля минор</span><span class="smi-keys">0♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('E_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ми минор</span><span class="smi-keys">1♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('B_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Си минор</span><span class="smi-keys">2♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Fs_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Фа-диез минор</span><span class="smi-keys">3♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Cs_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>До-диез минор</span><span class="smi-keys">4♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Gs_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Соль-диез минор</span><span class="smi-keys">5♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Ds_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ре-диез минор</span><span class="smi-keys">6♯</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('As_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ля-диез минор</span><span class="smi-keys">7♯</span></button>
+        <div class="side-menu-section">Минорные гаммы — бемольные</div>
+        <button class="side-menu-item" onclick="closeMenu();showScale('A_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ля минор</span><span class="smi-keys">0♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('D_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ре минор</span><span class="smi-keys">1♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('G_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Соль минор</span><span class="smi-keys">2♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('C_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>До минор</span><span class="smi-keys">3♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('F_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Фа минор</span><span class="smi-keys">4♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Bb_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Си-бемоль минор</span><span class="smi-keys">5♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Eb_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ми-бемоль минор</span><span class="smi-keys">6♭</span></button>
+        <button class="side-menu-item" onclick="closeMenu();showScale('Ab_minor')"><span style="font-size:16px;opacity:0.7">🎵</span><span>Ля-бемоль минор</span><span class="smi-keys">7♭</span></button>
+        <div class="side-menu-divider"></div>
+        <button class="side-menu-item" onclick="closeMenu();document.getElementById('ABOUT_MODAL').style.display='flex'">
+          <span style="font-size:16px;opacity:0.7">ℹ️</span>
+          <span>О программе</span>
+        </button>
+        <button class="side-menu-item" onclick="closeMenu();document.getElementById('UPDATES_MODAL').style.display='flex'">
+          <span style="font-size:16px;opacity:0.7">📋</span>
+          <span>Обновления</span>
+        </button>
+      </div>
     </div>
   </div>
   <!-- Модальное окно "О приложении" -->
@@ -224,9 +339,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:440px;width:92%;box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;position:relative;max-height:90vh;overflow-y:auto">
       <button onclick="document.getElementById('ABOUT_MODAL').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;color:#999;cursor:pointer;line-height:1">✕</button>
       <div style="font-size:18px;font-weight:600;color:#333;margin-bottom:4px">Мой Кларнет B♭</div>
-      <div style="font-size:13px;color:#888;margin-bottom:14px">Аппликатура кларнета</div>
+      <div style="font-size:13px;color:#888;margin-bottom:14px">Аппликатура кларнета · v.15</div>
       <div style="font-size:12px;color:#666;line-height:1.6;text-align:left;margin-bottom:18px;padding:0 4px">
-        Бесплатное приложение для изучения аппликатуры кларнета.<br><br>
+        Бесплатное приложение для изучения игры на кларнете.<br><br>
+        • Аппликатура кларнета<br>
+        • Гаммы на кларнете<br>
+        • Арпеджио на кларнете<br><br>
         Приложение можно скачать и использовать локально — достаточно распаковать архив и открыть файл в любом современном браузере.<br><br>
         Приложение является бесплатным и может использоваться как в личных, так и в коммерческих целях.<br><br>
         Указание авторства не требуется.
@@ -242,8 +360,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
   </div>
+  <!-- Модальное окно "Обновления" -->
+  <div id="UPDATES_MODAL" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:440px;width:92%;box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;position:relative;max-height:90vh;overflow-y:auto">
+      <button onclick="document.getElementById('UPDATES_MODAL').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;color:#999;cursor:pointer;line-height:1">✕</button>
+      <div style="font-size:18px;font-weight:600;color:#333;margin-bottom:4px">Обновления</div>
+      <div style="font-size:13px;color:#888;margin-bottom:14px">История версий</div>
+      <div style="font-size:12px;color:#666;line-height:1.8;text-align:left;padding:0 4px">
+        <div style="margin-bottom:12px">
+          <span style="font-weight:600;color:#185FA5">v.15</span> <span style="color:#999">— текущая</span><br>
+          Базовые гаммы: мажорные и минорные гаммы во всех тональностях с отображением ступеней и аппликатуры.
+        </div>
+        <div>
+          <span style="font-weight:600;color:#555">v.14</span><br>
+          Все варианты аппликатур, встроенный тюнер, плеер с воспроизведением нот.
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="app-body">
-  <div class="left">
+  <div class="left" id="LEFT">
+    <button class="scale-indicator" id="SCALE_IND" onclick="clearScale()" title="Нажмите, чтобы убрать подсветку">×</button>
     <div class="nl" id="NL"></div>
   </div>
   <div class="right">
@@ -426,12 +563,12 @@ const NOTES=[
 const ALL=['B1','B2','F1','F2','F3','F4','F5','F6','F7','L1','L2','L3','L4','L5','L6','R1','R2','R3','R4','R5','R6','R7','R8','R9'];
 
 const NOTE_POS={
-  'C3':-11,'C♯3':-11,'D3':-9,'D♯3':-8,'E3':-7,'F3':-6,'F♯3':-6,'G♭3':-5,'G3':-5,'G♯3':-5,'A♭3':-4,'A3':-4,'A♯3':-4,'B♭3':-3,'B3':-3,
-  'C4':-2,'C♯4':-2,'D♭4':-1,'D4':-1,'D♯4':-1,'E♭4':0,'E4':0,'F4':1,'F♯4':1,'G♭4':2,
-  'G4':2,'G♯4':2,'A♭4':3,'A4':3,'A♯4':3,'B♭4':4,'B4':4,
-  'C5':5,'C♯5':5,'D♭5':6,'D5':6,'D♯5':6,'E♭5':7,'E5':7,'F5':8,'F♯5':8,'G♭5':9,
-  'G5':9,'G♯5':9,'A♭5':10,'A5':10,'A♯5':10,'B♭5':11,'B5':11,
-  'C6':12,'C♯6':12,'D♭6':13,'D6':13,'D♯6':13,'E♭6':14,'E6':14
+  'C3':-11,'C♯3':-11,'D3':-9,'D♯3':-8,'E3':-7,'E♯3':-6,'F♭3':-7,'F3':-6,'F♯3':-6,'G♭3':-5,'G3':-5,'G♯3':-5,'A♭3':-4,'A3':-4,'A♯3':-4,'B♭3':-3,'B3':-3,'B♯3':-2,'C♭3':-3,
+  'C4':-2,'C♯4':-2,'C♭4':-3,'D♭4':-1,'D4':-1,'D♯4':-1,'E♭4':0,'E4':0,'E♯4':1,'F♭4':0,'F4':1,'F♯4':1,'G♭4':2,
+  'G4':2,'G♯4':2,'A♭4':3,'A4':3,'A♯4':3,'B♭4':4,'B4':4,'B♯4':5,'C♭4':4,
+  'C5':5,'C♯5':5,'C♭5':4,'D♭5':6,'D5':6,'D♯5':6,'E♭5':7,'E5':7,'E♯5':8,'F♭5':7,'F5':8,'F♯5':8,'G♭5':9,
+  'G5':9,'G♯5':9,'A♭5':10,'A5':10,'A♯5':10,'B♭5':11,'B5':11,'B♯5':12,'C♭5':11,
+  'C6':12,'C♯6':12,'C♭6':11,'D♭6':13,'D6':13,'D♯6':13,'E♭6':14,'E6':14,'E♯6':15,'F♭6':14
 };
 
 function makeStaff(noteName, oct) {
@@ -680,19 +817,32 @@ function updateNoteDisplay(note) {
       }
     }
   } else {
-    // Строй инструмента — оригинал
+    // Строй инструмента
+    // Определяем: нужно ли поменять основную/энгармоник для активной гаммы
+    let mainName = note.n;
+    let altName = note.a;
+    if (_activeScale && note.a) {
+      const scale = SCALES[_activeScale];
+      if (scale) {
+        const usesAlt = scale.notes.some(sn => sn.n === note.a);
+        if (usesAlt) {
+          mainName = note.a;
+          altName = note.n;
+        }
+      }
+    }
     // Строка 1: латынь
-    el.innerHTML = '<span>' + note.n + note.o + '</span>' +
-      (note.a ? '<span style="color:#bbb;font-size:22px">'+note.a+note.o+'</span>' : '');
+    el.innerHTML = '<span>' + mainName + note.o + '</span>' +
+      (altName ? '<span style="color:#bbb;font-size:22px">'+altName+note.o+'</span>' : '');
     // Строка 2: русские названия
     const nsEl2 = document.getElementById('NS');
     if(nsEl2) {
-      const ruMain2 = getRuName(note.n);
-      const ruAlt2 = note.a ? getRuName(note.a) : null;
+      const ruMain2 = getRuName(mainName);
+      const ruAlt2 = altName ? getRuName(altName) : null;
       nsEl2.innerHTML = '<span>' + ruMain2 + '</span>' +
         (ruAlt2 ? '<span style="color:#bbb">' + ruAlt2 + '</span>' : '');
     }
-    if(staffEl) drawMainStaff(note.n, note.o, note.a);
+    if(staffEl) drawMainStaff(mainName, note.o, altName);
   }
 }
 
@@ -723,7 +873,7 @@ NOTES.forEach((note,i)=>{
   b.style.background=OCT_COLORS[note.o]||'transparent';
   const staffSvg=makeStaff(note.n,note.o);
   const altStaffSvg = note.a ? makeStaff(note.a, note.o) : '';
-  const staffDiv='<div class="nb-staff">'+staffSvg+(altStaffSvg?altStaffSvg:'')+'</div>';
+  const staffDiv='<div class="nb-staff">'+staffSvg+(altStaffSvg?'<span class="enh">'+altStaffSvg+'</span>':'')+'</div>';
   // Цвет текста по октаве
   const tc=NOTE_TEXT_COLORS[note.o]||'#333';
   const ac=NOTE_ALT_COLORS[note.o]||'#888';
@@ -731,10 +881,10 @@ NOTES.forEach((note,i)=>{
   const ruName=getRuName(note.n);
   const ruNameAlt=note.a?getRuName(note.a):null;
   // Ноты + энгармоник (вплотную) — энгармоник цветом ac
-  const noteBlock='<div class="nb-notes"><span class="nb-main" style="color:'+tc+'">'+note.n+'</span>'+(note.a?'<span class="nb-alt" style="color:'+ac+'">'+note.a+'</span>':'')+'</div>';
-  const ruBlock='<div class="nb-ru">'+'<span style="color:'+tc+'">'+ruName+'</span>'+(ruNameAlt?'<span style="color:'+ac+'">'+ruNameAlt+'</span>':'')+'</div>';
-  const textDiv='<div class="nb-text">'+noteBlock+ruBlock+'</div>';
-  b.innerHTML=staffDiv+textDiv;
+  const noteBlock='<div class="nb-notes"><span class="nb-main" style="color:'+tc+'">'+note.n+'</span>'+(note.a?'<span class="nb-alt enh" style="color:'+ac+'">'+note.a+'</span>':'')+'</div>';
+  const ruBlock='<div class="nb-ru">'+'<span style="color:'+tc+'">'+ruName+'</span>'+(ruNameAlt?'<span class="enh" style="color:'+ac+'">'+ruNameAlt+'</span>':'')+'</div>';
+  const textDiv='<div class="nb-text">'+noteBlock+ruBlock+'<span class="scale-deg sd-desk"></span></div>';
+  b.innerHTML=staffDiv+'<span class="scale-deg sd-mob"></span>'+textDiv;
   b.onclick=()=>sel(i);
   nl.appendChild(b);
 });
@@ -1007,6 +1157,373 @@ async function toggleTuner() {
 function showTuner() {
   const t = document.getElementById('TUNER');
   if(t) t.style.display = 'flex';
+}
+
+// ── ГАММЫ ───────────────────────────────────────────────────────────
+const SCALES = {
+  // ── Диезные мажорные ──
+  'C_major': {
+    name: 'До мажор',
+    notes: [
+      { n: 'C', degree: 1 }, { n: 'D', degree: 2 }, { n: 'E', degree: 3 },
+      { n: 'F', degree: 4 }, { n: 'G', degree: 5 }, { n: 'A', degree: 6 }, { n: 'B', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'G_major': {
+    name: 'Соль мажор',
+    notes: [
+      { n: 'G', degree: 1 }, { n: 'A', degree: 2 }, { n: 'B', degree: 3 },
+      { n: 'C', degree: 4 }, { n: 'D', degree: 5 }, { n: 'E', degree: 6 }, { n: 'F\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'D_major': {
+    name: 'Ре мажор',
+    notes: [
+      { n: 'D', degree: 1 }, { n: 'E', degree: 2 }, { n: 'F\u266f', degree: 3 },
+      { n: 'G', degree: 4 }, { n: 'A', degree: 5 }, { n: 'B', degree: 6 }, { n: 'C\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'A_major': {
+    name: 'Ля мажор',
+    notes: [
+      { n: 'A', degree: 1 }, { n: 'B', degree: 2 }, { n: 'C\u266f', degree: 3 },
+      { n: 'D', degree: 4 }, { n: 'E', degree: 5 }, { n: 'F\u266f', degree: 6 }, { n: 'G\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'E_major': {
+    name: 'Ми мажор',
+    notes: [
+      { n: 'E', degree: 1 }, { n: 'F\u266f', degree: 2 }, { n: 'G\u266f', degree: 3 },
+      { n: 'A', degree: 4 }, { n: 'B', degree: 5 }, { n: 'C\u266f', degree: 6 }, { n: 'D\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'B_major': {
+    name: 'Си мажор',
+    notes: [
+      { n: 'B', degree: 1 }, { n: 'C\u266f', degree: 2 }, { n: 'D\u266f', degree: 3 },
+      { n: 'E', degree: 4 }, { n: 'F\u266f', degree: 5 }, { n: 'G\u266f', degree: 6 }, { n: 'A\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Fs_major': {
+    name: 'Фа-диез мажор',
+    notes: [
+      { n: 'F\u266f', degree: 1 }, { n: 'G\u266f', degree: 2 }, { n: 'A\u266f', degree: 3 },
+      { n: 'B', degree: 4 }, { n: 'C\u266f', degree: 5 }, { n: 'D\u266f', degree: 6 }, { n: 'E\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Cs_major': {
+    name: 'До-диез мажор',
+    notes: [
+      { n: 'C\u266f', degree: 1 }, { n: 'D\u266f', degree: 2 }, { n: 'E\u266f', degree: 3 },
+      { n: 'F\u266f', degree: 4 }, { n: 'G\u266f', degree: 5 }, { n: 'A\u266f', degree: 6 }, { n: 'B\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  // ── Бемольные мажорные ──
+  'F_major': {
+    name: 'Фа мажор',
+    notes: [
+      { n: 'F', degree: 1 }, { n: 'G', degree: 2 }, { n: 'A', degree: 3 },
+      { n: 'B\u266d', degree: 4 }, { n: 'C', degree: 5 }, { n: 'D', degree: 6 }, { n: 'E', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Bb_major': {
+    name: 'Си-бемоль мажор',
+    notes: [
+      { n: 'B\u266d', degree: 1 }, { n: 'C', degree: 2 }, { n: 'D', degree: 3 },
+      { n: 'E\u266d', degree: 4 }, { n: 'F', degree: 5 }, { n: 'G', degree: 6 }, { n: 'A', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Eb_major': {
+    name: 'Ми-бемоль мажор',
+    notes: [
+      { n: 'E\u266d', degree: 1 }, { n: 'F', degree: 2 }, { n: 'G', degree: 3 },
+      { n: 'A\u266d', degree: 4 }, { n: 'B\u266d', degree: 5 }, { n: 'C', degree: 6 }, { n: 'D', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Ab_major': {
+    name: 'Ля-бемоль мажор',
+    notes: [
+      { n: 'A\u266d', degree: 1 }, { n: 'B\u266d', degree: 2 }, { n: 'C', degree: 3 },
+      { n: 'D\u266d', degree: 4 }, { n: 'E\u266d', degree: 5 }, { n: 'F', degree: 6 }, { n: 'G', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Db_major': {
+    name: 'Ре-бемоль мажор',
+    notes: [
+      { n: 'D\u266d', degree: 1 }, { n: 'E\u266d', degree: 2 }, { n: 'F', degree: 3 },
+      { n: 'G\u266d', degree: 4 }, { n: 'A\u266d', degree: 5 }, { n: 'B\u266d', degree: 6 }, { n: 'C', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Gb_major': {
+    name: 'Соль-бемоль мажор',
+    notes: [
+      { n: 'G\u266d', degree: 1 }, { n: 'A\u266d', degree: 2 }, { n: 'B\u266d', degree: 3 },
+      { n: 'C\u266d', degree: 4 }, { n: 'D\u266d', degree: 5 }, { n: 'E\u266d', degree: 6 }, { n: 'F', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Cb_major': {
+    name: 'До-бемоль мажор',
+    notes: [
+      { n: 'C\u266d', degree: 1 }, { n: 'D\u266d', degree: 2 }, { n: 'E\u266d', degree: 3 },
+      { n: 'F\u266d', degree: 4 }, { n: 'G\u266d', degree: 5 }, { n: 'A\u266d', degree: 6 }, { n: 'B\u266d', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  // ── Диезные минорные (натуральный минор) ──
+  // Формула: тон-полутон-тон-тон-полутон-тон-тон
+  'A_minor': {
+    name: 'Ля минор',
+    notes: [
+      { n: 'A', degree: 1 }, { n: 'B', degree: 2 }, { n: 'C', degree: 3 },
+      { n: 'D', degree: 4 }, { n: 'E', degree: 5 }, { n: 'F', degree: 6 }, { n: 'G', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'E_minor': {
+    name: 'Ми минор',
+    notes: [
+      { n: 'E', degree: 1 }, { n: 'F\u266f', degree: 2 }, { n: 'G', degree: 3 },
+      { n: 'A', degree: 4 }, { n: 'B', degree: 5 }, { n: 'C', degree: 6 }, { n: 'D', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'B_minor': {
+    name: 'Си минор',
+    notes: [
+      { n: 'B', degree: 1 }, { n: 'C\u266f', degree: 2 }, { n: 'D', degree: 3 },
+      { n: 'E', degree: 4 }, { n: 'F\u266f', degree: 5 }, { n: 'G', degree: 6 }, { n: 'A', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Fs_minor': {
+    name: 'Фа-диез минор',
+    notes: [
+      { n: 'F\u266f', degree: 1 }, { n: 'G\u266f', degree: 2 }, { n: 'A', degree: 3 },
+      { n: 'B', degree: 4 }, { n: 'C\u266f', degree: 5 }, { n: 'D', degree: 6 }, { n: 'E', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Cs_minor': {
+    name: 'До-диез минор',
+    notes: [
+      { n: 'C\u266f', degree: 1 }, { n: 'D\u266f', degree: 2 }, { n: 'E', degree: 3 },
+      { n: 'F\u266f', degree: 4 }, { n: 'G\u266f', degree: 5 }, { n: 'A', degree: 6 }, { n: 'B', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Gs_minor': {
+    name: 'Соль-диез минор',
+    notes: [
+      { n: 'G\u266f', degree: 1 }, { n: 'A\u266f', degree: 2 }, { n: 'B', degree: 3 },
+      { n: 'C\u266f', degree: 4 }, { n: 'D\u266f', degree: 5 }, { n: 'E', degree: 6 }, { n: 'F\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Ds_minor': {
+    name: 'Ре-диез минор',
+    notes: [
+      { n: 'D\u266f', degree: 1 }, { n: 'E\u266f', degree: 2 }, { n: 'F\u266f', degree: 3 },
+      { n: 'G\u266f', degree: 4 }, { n: 'A\u266f', degree: 5 }, { n: 'B', degree: 6 }, { n: 'C\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'As_minor': {
+    name: 'Ля-диез минор',
+    notes: [
+      { n: 'A\u266f', degree: 1 }, { n: 'B\u266f', degree: 2 }, { n: 'C\u266f', degree: 3 },
+      { n: 'D\u266f', degree: 4 }, { n: 'E\u266f', degree: 5 }, { n: 'F\u266f', degree: 6 }, { n: 'G\u266f', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  // ── Бемольные минорные (натуральный минор) ──
+  'D_minor': {
+    name: 'Ре минор',
+    notes: [
+      { n: 'D', degree: 1 }, { n: 'E', degree: 2 }, { n: 'F', degree: 3 },
+      { n: 'G', degree: 4 }, { n: 'A', degree: 5 }, { n: 'B\u266d', degree: 6 }, { n: 'C', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'G_minor': {
+    name: 'Соль минор',
+    notes: [
+      { n: 'G', degree: 1 }, { n: 'A', degree: 2 }, { n: 'B\u266d', degree: 3 },
+      { n: 'C', degree: 4 }, { n: 'D', degree: 5 }, { n: 'E\u266d', degree: 6 }, { n: 'F', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'C_minor': {
+    name: 'До минор',
+    notes: [
+      { n: 'C', degree: 1 }, { n: 'D', degree: 2 }, { n: 'E\u266d', degree: 3 },
+      { n: 'F', degree: 4 }, { n: 'G', degree: 5 }, { n: 'A\u266d', degree: 6 }, { n: 'B\u266d', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'F_minor': {
+    name: 'Фа минор',
+    notes: [
+      { n: 'F', degree: 1 }, { n: 'G', degree: 2 }, { n: 'A\u266d', degree: 3 },
+      { n: 'B\u266d', degree: 4 }, { n: 'C', degree: 5 }, { n: 'D\u266d', degree: 6 }, { n: 'E\u266d', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Bb_minor': {
+    name: 'Си-бемоль минор',
+    notes: [
+      { n: 'B\u266d', degree: 1 }, { n: 'C', degree: 2 }, { n: 'D\u266d', degree: 3 },
+      { n: 'E\u266d', degree: 4 }, { n: 'F', degree: 5 }, { n: 'G\u266d', degree: 6 }, { n: 'A\u266d', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Eb_minor': {
+    name: 'Ми-бемоль минор',
+    notes: [
+      { n: 'E\u266d', degree: 1 }, { n: 'F', degree: 2 }, { n: 'G\u266d', degree: 3 },
+      { n: 'A\u266d', degree: 4 }, { n: 'B\u266d', degree: 5 }, { n: 'C\u266d', degree: 6 }, { n: 'D\u266d', degree: 7 }
+    ], accents: [1, 3, 5]
+  },
+  'Ab_minor': {
+    name: 'Ля-бемоль минор',
+    notes: [
+      { n: 'A\u266d', degree: 1 }, { n: 'B\u266d', degree: 2 }, { n: 'C\u266d', degree: 3 },
+      { n: 'D\u266d', degree: 4 }, { n: 'E\u266d', degree: 5 }, { n: 'F\u266d', degree: 6 }, { n: 'G\u266d', degree: 7 }
+    ], accents: [1, 3, 5]
+  }
+};
+
+// Таблица энгармонических эквивалентов для сопоставления гаммы с нотами
+const ENHARMONIC = {
+  'C\u266d':'B', 'D\u266d':'C\u266f', 'E\u266d':'D\u266f', 'F\u266d':'E',
+  'G\u266d':'F\u266f', 'A\u266d':'G\u266f', 'B\u266d':'A\u266f',
+  'E\u266f':'F', 'B\u266f':'C'
+};
+
+let _activeScale = null;
+
+function findScaleDegree(note, scale) {
+  // Проверяем каждую ступень гаммы
+  for (const sn of scale.notes) {
+    // Прямое совпадение с основным именем ноты
+    if (sn.n === note.n) return sn;
+    // Совпадение с энгармоническим именем ноты
+    if (note.a && sn.n === note.a) return sn;
+    // Ступень гаммы — энгармонический эквивалент основного имени
+    const eq = ENHARMONIC[sn.n];
+    if (eq && eq === note.n) return sn;
+    if (eq && note.a && eq === note.a) return sn;
+  }
+  return null;
+}
+
+function showScale(scaleId) {
+  const scale = SCALES[scaleId];
+  if (!scale) return;
+  _activeScale = scaleId;
+  clearScaleHighlight();
+
+  const left = document.getElementById('LEFT');
+  if (left) left.classList.add('scale-mode');
+
+  const ind = document.getElementById('SCALE_IND');
+  if (ind) { ind.textContent = '✕  ' + scale.name; ind.classList.add('active'); }
+
+  document.querySelectorAll('.nb').forEach(btn => {
+    const idx = parseInt(btn.dataset.i);
+    const note = NOTES[idx];
+    if (!note) return;
+    const scaleNote = findScaleDegree(note, scale);
+    if (scaleNote) {
+      btn.classList.add('scale-note');
+      if (scale.accents.includes(scaleNote.degree)) btn.classList.add('scale-accent');
+      btn.querySelectorAll('.scale-deg').forEach(el => { el.textContent = scaleNote.degree; });
+
+      const scaleName = scaleNote.n;
+      const scaleRuName = getRuName(scaleName);
+
+      // Подменить латинское название
+      const mainEl = btn.querySelector('.nb-main');
+      if (mainEl && mainEl.textContent !== scaleName) {
+        mainEl.dataset.orig = mainEl.textContent;
+        mainEl.textContent = scaleName;
+      }
+      // Подменить русское название
+      const ruEl = btn.querySelector('.nb-ru > span:first-child');
+      if (ruEl && ruEl.textContent !== scaleRuName) {
+        ruEl.dataset.orig = ruEl.textContent;
+        ruEl.textContent = scaleRuName;
+      }
+      // Перерисовать нотный стан если имя отличается от оригинала
+      if (scaleName !== note.n) {
+        const staffEl = btn.querySelector('.nb-staff');
+        if (staffEl) {
+          staffEl.dataset.orig = staffEl.innerHTML;
+          staffEl.innerHTML = makeStaff(scaleName, note.o);
+        }
+      }
+    }
+  });
+
+  const first = document.querySelector('.nb.scale-note');
+  if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+function clearScaleHighlight() {
+  document.querySelectorAll('.nb').forEach(btn => {
+    btn.classList.remove('scale-note', 'scale-accent');
+    btn.querySelectorAll('.scale-deg').forEach(el => { el.textContent = ''; });
+
+    // Восстановить оригинальные имена
+    const mainEl = btn.querySelector('.nb-main');
+    if (mainEl && mainEl.dataset.orig) {
+      mainEl.textContent = mainEl.dataset.orig;
+      delete mainEl.dataset.orig;
+    }
+    const ruEl = btn.querySelector('.nb-ru > span:first-child');
+    if (ruEl && ruEl.dataset.orig) {
+      ruEl.textContent = ruEl.dataset.orig;
+      delete ruEl.dataset.orig;
+    }
+    // Восстановить нотный стан
+    const staffEl = btn.querySelector('.nb-staff');
+    if (staffEl && staffEl.dataset.orig) {
+      staffEl.innerHTML = staffEl.dataset.orig;
+      delete staffEl.dataset.orig;
+    }
+  });
+}
+
+function clearScale() {
+  _activeScale = null;
+  clearScaleHighlight();
+  const left = document.getElementById('LEFT');
+  if (left) left.classList.remove('scale-mode');
+  const ind = document.getElementById('SCALE_IND');
+  if (ind) { ind.classList.remove('active'); ind.textContent = ''; }
+}
+
+function goHome() {
+  clearScale();
+  document.querySelectorAll('.nb').forEach(b => {
+    b.classList.remove('on');
+    const o = NOTES[parseInt(b.dataset.i)]?.o;
+    b.style.background = OCT_COLORS[o] || 'transparent';
+  });
+  const wl = document.getElementById('WELCOME');
+  const cs = document.getElementById('CS');
+  if (wl) wl.style.display = '';
+  if (cs) cs.style.display = 'none';
+  const nt = document.getElementById('NT');
+  if (nt) { nt.style.color = '#bbb'; nt.style.fontSize = '16px'; nt.style.fontWeight = '400'; nt.style.paddingTop = '4px'; nt.textContent = 'Выберите ноту'; }
+  const ns = document.getElementById('NS');
+  if (ns) ns.innerHTML = '';
+  const staffEl = document.getElementById('STAFF_MAIN');
+  if (staffEl) staffEl.innerHTML = '';
+  document.getElementById('LG').style.visibility = 'hidden';
+  document.getElementById('FINGER_NAV').style.visibility = 'hidden';
+  const pb = document.getElementById('PLAY'); if (pb) pb.style.display = 'none';
+  const rw = document.getElementById('REPEAT_WRAP'); if (rw) rw.style.display = 'none';
+  const tuner = document.getElementById('TUNER'); if (tuner) tuner.style.display = 'none';
+  apply(Object.fromEntries(ALL.map(k => [k, 0])));
+  stopNote();
+  window._lastNote = null;
+}
+
+// ── БОКОВОЕ МЕНЮ ────────────────────────────────────────────────────
+function toggleMenu() {
+  const m = document.getElementById('SIDE_MENU');
+  if (m.classList.contains('open')) closeMenu();
+  else { m.classList.add('open'); m.style.display = 'flex'; }
+}
+function closeMenu() {
+  const m = document.getElementById('SIDE_MENU');
+  m.classList.remove('open'); m.style.display = 'none';
 }
 
 </script>
