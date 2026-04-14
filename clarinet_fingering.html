@@ -375,7 +375,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:440px;width:92%;box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;position:relative;max-height:90vh;overflow-y:auto">
       <button onclick="document.getElementById('ABOUT_MODAL').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;color:#999;cursor:pointer;line-height:1">✕</button>
       <div style="font-size:18px;font-weight:600;color:#333;margin-bottom:4px">Мой Кларнет B♭</div>
-      <div style="font-size:13px;color:#888;margin-bottom:14px">Аппликатура кларнета · v.16</div>
+      <div style="font-size:13px;color:#888;margin-bottom:14px">Аппликатура кларнета · v.17</div>
       <div style="font-size:12px;color:#666;line-height:1.6;text-align:left;margin-bottom:18px;padding:0 4px">
         Бесплатное приложение для изучения игры на кларнете.<br><br>
         • Аппликатура кларнета<br>
@@ -404,7 +404,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div style="font-size:13px;color:#888;margin-bottom:14px">История версий</div>
       <div style="font-size:12px;color:#666;line-height:1.8;text-align:left;padding:0 4px">
         <div style="margin-bottom:12px">
-          <span style="font-weight:600;color:#185FA5">v.16</span> <span style="color:#999">— текущая</span><br>
+          <span style="font-weight:600;color:#185FA5">v.17</span> <span style="color:#999">— текущая</span><br>
+          <div style="margin-top:4px">
+          • Нисходящая гамма — опция в модальном окне «Ноты», вторая нотная линейка с обратным порядком нот<br>
+          • Переключатель «джаз / классика» для мелодического мажора и минора<br>
+          • 8-я ступень (тоника) в конце восходящей гаммы при режиме «Только полные»<br>
+          • Плеер воспроизводит восходящую и нисходящую гаммы последовательно<br>
+          • Синхронизация горизонтального скролла между восходящей и нисходящей линейками
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <span style="font-weight:600;color:#555">v.16</span><br>
           <div style="margin-top:4px">
           • Расширения гамм: гармонический, мелодический, пентатоника, блюзовая — для всех тональностей<br>
           • Параллельные тональности (мажор ↔ минор)<br>
@@ -441,6 +451,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <label id="FULL_SCALES_LABEL" style="display:inline-flex;align-items:center;gap:4px;margin-left:10px;cursor:pointer;font-size:11px;color:#666;user-select:none">
           <input type="checkbox" id="FULL_SCALES_CB" checked onchange="toggleFullScales()" style="cursor:pointer;margin:0">
           Только полные
+        </label>
+        <label style="display:inline-flex;align-items:center;gap:4px;margin-left:10px;cursor:pointer;font-size:11px;color:#666;user-select:none">
+          <input type="checkbox" id="DESC_SCALES_CB" onchange="toggleDescScales()" style="cursor:pointer;margin:0">
+          Нисходящая
         </label>
       </div>
       <div id="NOTES_MODAL_BODY" style="display:flex;flex-direction:column;gap:18px"></div>
@@ -1758,7 +1772,8 @@ function makeStaffForScale(noteName, oct) {
 
 // Построение нотного стана с несколькими нотами гаммы (одна октава, начиная с 4)
 // keySignature: массив ключевых знаков из натуральной гаммы
-function makeScaleStaffSVG(scaleNotes, keySignature, octaves, fullOnly) {
+// descending: если true — ноты отображаются в обратном порядке (нисходящая гамма)
+function makeScaleStaffSVG(scaleNotes, keySignature, octaves, fullOnly, descending) {
   if (!octaves || octaves.length === 0) octaves = [4];
   var S = 7;
   var noteSpacing = 32;
@@ -1858,6 +1873,37 @@ function makeScaleStaffSVG(scaleNotes, keySignature, octaves, fullOnly) {
 
     return midiA - midiB;
   });
+
+  // Добавляем 8-ю ступень (тонику следующей октавы) только в самый конец гаммы
+  // при восходящем движении и режиме «только полные»
+  if (fullOnly && !descending && allNotesWithOct.length > 0) {
+    var tonicNote = scaleNotes[0];
+    var tonicLetter = tonicNote.n.charAt(0);
+    var tonicAcc = tonicNote.n.length > 1 ? tonicNote.n.substring(1) : '';
+    // Последняя нота в массиве — определяем октаву тоники, которая будет на 1 выше
+    var lastNote = allNotesWithOct[allNotesWithOct.length - 1];
+    // Находим октаву группы последней ноты (по первой ноте этой группы)
+    var expectedCount = scaleNotes.length;
+    var lastGroupStart = Math.floor((allNotesWithOct.length - 1) / expectedCount) * expectedCount;
+    var groupFirstNote = allNotesWithOct[lastGroupStart];
+    var nextTonicOct = groupFirstNote.oct + 1;
+    var nextTonicRealOct = nextTonicOct;
+    if (tonicLetter === 'B' && tonicAcc.includes('\u266f')) nextTonicRealOct++;
+    if (tonicLetter === 'C' && tonicAcc.includes('\u266d')) nextTonicRealOct--;
+    var nextTonicMidi = nextTonicRealOct * 12 + tonicSemi;
+    // Проверяем диапазон кларнета
+    if (nextTonicMidi >= 3 * 12 + 4 && nextTonicMidi <= 6 * 12 + 4) {
+      allNotesWithOct.push({
+        n: tonicNote.n, degree: '8(1)', oct: nextTonicOct,
+        letter: tonicLetter, acc: tonicAcc, isOctaveTop: true
+      });
+    }
+  }
+
+  // Для нисходящей гаммы — разворачиваем массив
+  if (descending) {
+    allNotesWithOct.reverse();
+  }
 
   var W = notesStartX + allNotesWithOct.length * noteSpacing + rightPad;
 
@@ -1968,6 +2014,7 @@ function makeScaleStaffSVG(scaleNotes, keySignature, octaves, fullOnly) {
 
     var degText = String(sn.degree);
     var degColor = (typeof sn.degree === 'string' && sn.degree.includes('\u266d')) ? '#5BC0DE' :
+                   (typeof sn.degree === 'string' && sn.degree === '8(1)') ? '#E24B4A' :
                    ([1, 3, 5].includes(sn.degree) ? '#E24B4A' : '#185FA5');
     var degY = Math.max(yBase + 24, noteY + 16);
     svg += '<text x="' + cx + '" y="' + degY + '" font-size="9" font-weight="700" fill="' + degColor + '" text-anchor="middle">' + degText + '</text>';
@@ -2002,6 +2049,18 @@ function getKeySignature(scaleId) {
 
 var _notesOctaves = [3, 4, 5, 6];
 var _fullScalesOnly = true;
+var _showDescending = false;
+var _melodicClassic = false;
+
+function toggleDescScales() {
+  _showDescending = document.getElementById('DESC_SCALES_CB').checked;
+  renderNotesModal();
+}
+
+function toggleMelodicMode(isClassic) {
+  _melodicClassic = isClassic;
+  renderNotesModal();
+}
 
 function toggleFullScales() {
   _fullScalesOnly = document.getElementById('FULL_SCALES_CB').checked;
@@ -2044,21 +2103,81 @@ function renderNotesModal() {
   variants.forEach(function(v) {
     var scale = generateVariant(_activeScale, v.id);
     if (!scale) return;
+
+    // Определяем ноты для восходящей и нисходящей линеек
+    var ascNotes = scale.notes;
+    var descNotes = scale.notes; // по умолчанию те же
+
+    // Для мелодического варианта в классическом режиме подменяем ноты
+    if (v.id === 'melodic' && _showDescending && _melodicClassic) {
+      var naturalScale = generateVariant(_activeScale, 'natural');
+      if (isMajor) {
+        // Мелодический мажор (классика): восходящая = натуральный мажор, нисходящая = мелодический мажор
+        ascNotes = naturalScale.notes;
+        descNotes = scale.notes;
+      } else {
+        // Мелодический минор (классика): восходящая = мелодический минор, нисходящая = натуральный минор
+        ascNotes = scale.notes;
+        descNotes = naturalScale.notes;
+      }
+    }
+
     html += '<div style="margin-bottom:2px">';
     html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
-    html += '<div style="font-size:12px;font-weight:600;color:#555;letter-spacing:.03em;flex:1">' + v.label + '</div>';
+    html += '<div style="font-size:12px;font-weight:600;color:#555;letter-spacing:.03em;flex:1">' + v.label;
+    // Переключатель джаз/классика для мелодического варианта при включённой нисходящей
+    if (v.id === 'melodic' && _showDescending) {
+      var jazzActive = !_melodicClassic;
+      var classicActive = _melodicClassic;
+      html += ' <span style="display:inline-flex;align-items:center;gap:0;background:#f0eeea;border-radius:10px;padding:1px;margin-left:6px;vertical-align:middle">';
+      html += '<button onclick="toggleMelodicMode(false)" style="padding:1px 8px;border-radius:9px;border:none;background:' + (jazzActive ? '#185FA5' : 'none') + ';color:' + (jazzActive ? '#fff' : '#999') + ';font-size:10px;font-weight:' + (jazzActive ? '600' : '400') + ';cursor:pointer;transition:all .15s;line-height:16px">джаз</button>';
+      html += '<button onclick="toggleMelodicMode(true)" style="padding:1px 8px;border-radius:9px;border:none;background:' + (classicActive ? '#185FA5' : 'none') + ';color:' + (classicActive ? '#fff' : '#999') + ';font-size:10px;font-weight:' + (classicActive ? '600' : '400') + ';cursor:pointer;transition:all .15s;line-height:16px">классика</button>';
+      html += '</span>';
+    }
+    html += '</div>';
     html += '<button onclick="toggleLoop(this)" data-loop="0" class="loop-btn-' + v.id + '" style="background:#f0eeea;border:1px solid #d5d2cc;border-radius:6px;padding:1px 12px;font-size:12px;color:#bbb;cursor:pointer;height:22px;line-height:20px;min-width:45px;text-align:center;transition:all .15s;margin-right:4px" title="Циклическое воспроизведение">&#x1F501;</button>';
     html += '<button onclick="cycleSpeed(this)" data-speed="650" class="speed-btn-' + v.id + '" style="background:#f0eeea;border:1px solid #d5d2cc;border-radius:6px;padding:1px 12px;font-size:10px;font-weight:600;color:#888;cursor:pointer;height:22px;line-height:20px;min-width:45px;text-align:center;transition:all .15s;margin-right:4px" title="Скорость воспроизведения">×2</button>';
     html += '<button onclick="playScaleInModal(\'' + v.id + '\',this)" style="background:none;border:1.5px solid #185FA5;border-radius:50%;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;transition:all .15s" title="Играть">';
     html += '<span style="color:#185FA5;font-size:13px;margin-left:2px">&#9654;</span></button>';
     html += '</div>';
-    html += '<div data-variant="' + v.id + '" style="background:#fafaf8;border:1px solid #e8e6e2;border-radius:10px;padding:10px 8px;overflow-x:auto">';
-    html += makeScaleStaffSVG(scale.notes, keySig, _notesOctaves, _fullScalesOnly);
+    html += '<div data-variant="' + v.id + '" style="background:#fafaf8;border:1px solid #e8e6e2;border-radius:' + (_showDescending ? '10px 10px 0 0' : '10px') + ';padding:10px 8px;overflow-x:auto">';
+    html += '<div data-staff="asc">';
+    html += makeScaleStaffSVG(ascNotes, keySig, _notesOctaves, _fullScalesOnly, false);
     html += '</div>';
+    html += '</div>';
+    if (_showDescending) {
+      html += '<div data-variant-desc="' + v.id + '" style="background:#fafaf8;border:1px solid #e8e6e2;border-top:1px dashed #d0cdc8;border-radius:0 0 10px 10px;padding:10px 8px;overflow-x:auto">';
+      html += '<div data-staff="desc">';
+      html += makeScaleStaffSVG(descNotes, keySig, _notesOctaves, _fullScalesOnly, true);
+      html += '</div>';
+      html += '</div>';
+    }
     html += '</div>';
   });
 
   if (body) body.innerHTML = html;
+
+  // Синхронизация горизонтального скролла восходящей и нисходящей линеек
+  if (_showDescending) {
+    body.querySelectorAll('[data-variant]').forEach(function(ascCont) {
+      var vid = ascCont.dataset.variant;
+      var descCont = body.querySelector('[data-variant-desc="' + vid + '"]');
+      if (!descCont) return;
+      var syncing = false;
+      ascCont.addEventListener('scroll', function() {
+        if (syncing) return;
+        syncing = true;
+        descCont.scrollLeft = ascCont.scrollLeft;
+        syncing = false;
+      });
+      descCont.addEventListener('scroll', function() {
+        if (syncing) return;
+        syncing = true;
+        ascCont.scrollLeft = descCont.scrollLeft;
+        syncing = false;
+      });
+    });
+  }
 }
 
 var _scalePlayingId = null; // текущий id проигрывания для отмены
@@ -2121,15 +2240,146 @@ async function playScaleInModal(variantId, btn) {
   var speedBtn = document.querySelector('.speed-btn-' + variantId);
   var playSpeed = speedBtn ? (parseInt(speedBtn.dataset.speed) || 650) : 650;
 
-  // Собираем ноты с октавами (тот же алгоритм, что и в makeScaleStaffSVG)
-  var keySig = getKeySignature(_activeScale);
-  var tonicSemi = noteToSemitone(scale.notes[0].n);
+  // Определяем какие ноты для восходящей и нисходящей
+  var ascScaleNotes = scale.notes;
+  var descScaleNotes = scale.notes;
+
+  if (variantId === 'melodic' && _showDescending && _melodicClassic) {
+    var naturalScale = generateVariant(_activeScale, 'natural');
+    var isMajor = isMajorScale(_activeScale);
+    if (isMajor) {
+      ascScaleNotes = naturalScale.notes;
+      descScaleNotes = scale.notes;
+    } else {
+      ascScaleNotes = scale.notes;
+      descScaleNotes = naturalScale.notes;
+    }
+  }
+
+  var allNotes = _collectPlayNotes(ascScaleNotes, true);
+  if (allNotes.length === 0) return;
+
+  // Нисходящие ноты
+  var descNotes;
+  if (variantId === 'melodic' && _showDescending && _melodicClassic) {
+    descNotes = _collectPlayNotes(descScaleNotes, false);
+    descNotes.reverse();
+  } else {
+    // Для нисходящих берём ноты БЕЗ 8-й ступени и переворачиваем
+    var descBase = _collectPlayNotes(ascScaleNotes, false);
+    descNotes = descBase.slice().reverse();
+  }
+
+  // Визуал — найти SVG-контейнеры (восходящий и нисходящий)
+  var ascContainer = document.querySelector('[data-variant="' + variantId + '"]');
+  var descContainer = document.querySelector('[data-variant-desc="' + variantId + '"]');
+  var ascSvgEl = ascContainer ? ascContainer.querySelector('svg') : null;
+  var descSvgEl = descContainer ? descContainer.querySelector('svg') : null;
+
+  // Устанавливаем состояние "играет"
+  var playId = Date.now() + '_' + variantId;
+  _scalePlayingId = playId;
+  _scalePlayVariant = variantId;
+  _scalePlayBtn = btn;
+  btn.innerHTML = '<span style="color:#E24B4A;font-size:11px">&#9632;</span>';
+  btn.style.borderColor = '#E24B4A';
+
+  // Инициализируем AudioContext
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_audioCtx.state === 'suspended') await _audioCtx.resume();
+
+  // Читаем loop-флаг
+  var loopBtn = document.querySelector('.loop-btn-' + variantId);
+
+  // Вспомогательная функция подсветки ноты на стане
+  function highlightNote(svgEl, container, noteIdx) {
+    if (!svgEl) return;
+    [ascSvgEl, descSvgEl].forEach(function(svg) {
+      if (!svg) return;
+      svg.querySelectorAll('ellipse.scale-hl, line.scale-hl').forEach(function(el) {
+        el.classList.remove('scale-hl');
+        el.setAttribute('fill', el.dataset.origFill || '#111');
+        el.setAttribute('stroke', el.dataset.origStroke || '#111');
+      });
+    });
+    svgEl.querySelectorAll('[data-nidx="' + noteIdx + '"]').forEach(function(el) {
+      el.classList.add('scale-hl');
+      if (!el.dataset.origFill) el.dataset.origFill = el.getAttribute('fill') || '#111';
+      if (!el.dataset.origStroke) el.dataset.origStroke = el.getAttribute('stroke') || '#111';
+      if (el.tagName === 'ellipse') el.setAttribute('fill', '#E24B4A');
+      if (el.tagName === 'line') el.setAttribute('stroke', '#E24B4A');
+    });
+    var noteEl = svgEl.querySelector('ellipse[data-nidx="' + noteIdx + '"]');
+    if (noteEl && container) {
+      var cx = parseFloat(noteEl.getAttribute('cx'));
+      var svgW = svgEl.viewBox.baseVal.width;
+      var contW = container.clientWidth;
+      if (svgW > contW) {
+        var scrollRatio = cx / svgW;
+        container.scrollLeft = Math.max(0, scrollRatio * container.scrollWidth - contW / 2);
+      }
+    }
+  }
+
+  // Вспомогательная функция воспроизведения одной ноты
+  async function playNote(sn) {
+    var key = getSampleKey(sn.n, sn.oct);
+    if (SAMPLES[key]) {
+      if (!_bufCache[key]) {
+        var b64 = SAMPLES[key].split(',')[1];
+        var bin = atob(b64);
+        var bytes = new Uint8Array(bin.length);
+        for (var j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
+        _bufCache[key] = await _audioCtx.decodeAudioData(bytes.buffer);
+      }
+      if (_currentSrc) { try { _currentSrc.stop(); } catch(e) {} }
+      var src = _audioCtx.createBufferSource();
+      src.buffer = _bufCache[key];
+      var gain = _audioCtx.createGain();
+      gain.gain.value = 0.8;
+      src.connect(gain);
+      gain.connect(_audioCtx.destination);
+      src.start(0);
+      _currentSrc = src;
+    }
+  }
+
+  // Последовательно проигрываем (с возможным циклом)
+  do {
+    // === Восходящая гамма ===
+    for (var i = 0; i < allNotes.length; i++) {
+      if (_scalePlayingId !== playId) return;
+      highlightNote(ascSvgEl, ascContainer, i);
+      await playNote(allNotes[i]);
+      await new Promise(function(resolve) { setTimeout(resolve, playSpeed); });
+    }
+
+    // === Нисходящая гамма (если включена) ===
+    if (_showDescending && descSvgEl) {
+      for (var di = 0; di < descNotes.length; di++) {
+        if (_scalePlayingId !== playId) return;
+        highlightNote(descSvgEl, descContainer, di);
+        await playNote(descNotes[di]);
+        await new Promise(function(resolve) { setTimeout(resolve, playSpeed); });
+      }
+    }
+  } while (loopBtn && loopBtn.dataset.loop === '1' && _scalePlayingId === playId);
+
+  // Конец — сбрасываем
+  if (_scalePlayingId === playId) {
+    stopScalePlay();
+  }
+}
+
+// Вспомогательная функция: собирает ноты с октавами для воспроизведения (вынесена из playScaleInModal)
+function _collectPlayNotes(scaleNotes, addOctaveTop) {
+  var tonicSemi = noteToSemitone(scaleNotes[0].n);
   var allNotes = [];
   var allBaseOcts = [3, 4, 5, 6];
-  _notesOctaves.sort(function(a,b){ return a-b; });
+  var octs = _notesOctaves.slice().sort(function(a,b){ return a-b; });
 
   allBaseOcts.forEach(function(oct) {
-    scale.notes.forEach(function(sn) {
+    scaleNotes.forEach(function(sn) {
       var letter = sn.n.charAt(0);
       var noteAcc = sn.n.length > 1 ? sn.n.substring(1) : '';
       var thisSemi = noteToSemitone(sn.n);
@@ -2142,14 +2392,14 @@ async function playScaleInModal(variantId, btn) {
       if (letter === 'C' && noteAcc.includes('\u266d')) realOctForMidi--;
       var midiApprox = realOctForMidi * 12 + thisSemi;
       if (midiApprox < 3*12+4 || midiApprox > 6*12+4) return;
-      if (_notesOctaves.indexOf(noteOct) < 0) return;
+      if (octs.indexOf(noteOct) < 0) return;
       var exists = allNotes.some(function(e) { return e.n === sn.n && e.oct === noteOct; });
       if (exists) return;
       allNotes.push({ n: sn.n, oct: noteOct, letter: letter, acc: noteAcc, degree: sn.degree });
     });
   });
   if (_fullScalesOnly && allNotes.length > 0) {
-    var expectedCount = scale.notes.length;
+    var expectedCount = scaleNotes.length;
     var octGroups = {};
     allNotes.forEach(function(sn) {
       var rOct = sn.oct;
@@ -2176,93 +2426,25 @@ async function playScaleInModal(variantId, btn) {
     return (ra*12+sa) - (rb*12+sb);
   });
 
-  if (allNotes.length === 0) return;
-
-  // Визуал — найти SVG-контейнер
-  var container = document.querySelector('[data-variant="' + variantId + '"]');
-  var svgEl = container ? container.querySelector('svg') : null;
-
-  // Устанавливаем состояние "играет"
-  var playId = Date.now() + '_' + variantId;
-  _scalePlayingId = playId;
-  _scalePlayVariant = variantId;
-  _scalePlayBtn = btn;
-  btn.innerHTML = '<span style="color:#E24B4A;font-size:11px">&#9632;</span>';
-  btn.style.borderColor = '#E24B4A';
-
-  // Инициализируем AudioContext
-  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (_audioCtx.state === 'suspended') await _audioCtx.resume();
-
-  // Читаем loop-флаг
-  var loopBtn = document.querySelector('.loop-btn-' + variantId);
-
-  // Последовательно проигрываем (с возможным циклом)
-  do {
-  for (var i = 0; i < allNotes.length; i++) {
-    if (_scalePlayingId !== playId) return; // отменено
-
-    var sn = allNotes[i];
-
-    // Подсветка
-    if (svgEl) {
-      // Сбросить предыдущую
-      svgEl.querySelectorAll('ellipse.scale-hl, line.scale-hl').forEach(function(el) {
-        el.classList.remove('scale-hl');
-        el.setAttribute('fill', el.dataset.origFill || '#111');
-        el.setAttribute('stroke', el.dataset.origStroke || '#111');
-      });
-      // Подсветить текущую
-      svgEl.querySelectorAll('[data-nidx="' + i + '"]').forEach(function(el) {
-        el.classList.add('scale-hl');
-        if (!el.dataset.origFill) el.dataset.origFill = el.getAttribute('fill') || '#111';
-        if (!el.dataset.origStroke) el.dataset.origStroke = el.getAttribute('stroke') || '#111';
-        if (el.tagName === 'ellipse') el.setAttribute('fill', '#E24B4A');
-        if (el.tagName === 'line') el.setAttribute('stroke', '#E24B4A');
-      });
-      // Scroll into view если нужно
-      var noteEl = svgEl.querySelector('ellipse[data-nidx="' + i + '"]');
-      if (noteEl && container) {
-        var cx = parseFloat(noteEl.getAttribute('cx'));
-        var svgW = svgEl.viewBox.baseVal.width;
-        var contW = container.clientWidth;
-        if (svgW > contW) {
-          var scrollRatio = cx / svgW;
-          container.scrollLeft = Math.max(0, scrollRatio * container.scrollWidth - contW / 2);
-        }
-      }
+  // Добавляем 8-ю ступень только в самый конец (аналогично makeScaleStaffSVG)
+  if (addOctaveTop && _fullScalesOnly && allNotes.length > 0) {
+    var tonicNote = scaleNotes[0];
+    var tonicLetter = tonicNote.n.charAt(0);
+    var tonicAcc = tonicNote.n.length > 1 ? tonicNote.n.substring(1) : '';
+    var expectedCount = scaleNotes.length;
+    var lastGroupStart = Math.floor((allNotes.length - 1) / expectedCount) * expectedCount;
+    var groupFirstNote = allNotes[lastGroupStart];
+    var nextTonicOct = groupFirstNote.oct + 1;
+    var nextTonicRealOct = nextTonicOct;
+    if (tonicLetter === 'B' && tonicAcc.includes('\u266f')) nextTonicRealOct++;
+    if (tonicLetter === 'C' && tonicAcc.includes('\u266d')) nextTonicRealOct--;
+    var nextTonicMidi = nextTonicRealOct * 12 + tonicSemi;
+    if (nextTonicMidi >= 3 * 12 + 4 && nextTonicMidi <= 6 * 12 + 4) {
+      allNotes.push({ n: tonicNote.n, oct: nextTonicOct, letter: tonicLetter, acc: tonicAcc, degree: '8(1)' });
     }
-
-    // Воспроизвести ноту
-    var key = getSampleKey(sn.n, sn.oct);
-    if (SAMPLES[key]) {
-      if (!_bufCache[key]) {
-        var b64 = SAMPLES[key].split(',')[1];
-        var bin = atob(b64);
-        var bytes = new Uint8Array(bin.length);
-        for (var j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
-        _bufCache[key] = await _audioCtx.decodeAudioData(bytes.buffer);
-      }
-      if (_currentSrc) { try { _currentSrc.stop(); } catch(e) {} }
-      var src = _audioCtx.createBufferSource();
-      src.buffer = _bufCache[key];
-      var gain = _audioCtx.createGain();
-      gain.gain.value = 0.8;
-      src.connect(gain);
-      gain.connect(_audioCtx.destination);
-      src.start(0);
-      _currentSrc = src;
-    }
-
-    // Ждём до следующей ноты (скорость из настроек)
-    await new Promise(function(resolve) { setTimeout(resolve, playSpeed); });
   }
-  } while (loopBtn && loopBtn.dataset.loop === '1' && _scalePlayingId === playId);
 
-  // Конец — сбрасываем
-  if (_scalePlayingId === playId) {
-    stopScalePlay();
-  }
+  return allNotes;
 }
 
 function showNotesModal() {
