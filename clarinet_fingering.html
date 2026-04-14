@@ -1488,6 +1488,7 @@ function startTrainer() {
   document.getElementById('TR_ACTIVE').style.display = '';
   document.getElementById('TR_RESULTS').style.display = 'none';
 
+  // Предварительно инициализируем контексты (но НЕ микрофон — он вызывает iOS ducking)
   _trainerShowNote();
 }
 
@@ -1557,16 +1558,19 @@ async function _trainerPlayThenListen(note) {
   // Стопаем предыдущее воспроизведение тренажёра
   if(_trSrc) { try{_trSrc.stop();}catch(e){} _trSrc=null; }
 
+  // Полностью освобождаем микрофон перед воспроизведением (iOS ducking fix)
+  if(_tunerStream) { _tunerStream.getTracks().forEach(t => t.stop()); _tunerStream = null; }
+  _tunerAnalyser = null;
+
   const src = _audioCtx.createBufferSource();
   src.buffer = _bufCache[key];
   const gain = _audioCtx.createGain();
-  gain.gain.value = 0.7;
+  gain.gain.value = 0.8;
   src.connect(gain);
   gain.connect(_audioCtx.destination);
 
   src.onended = () => {
     _trSrc = null;
-    // Проверяем что тренажёр всё ещё активен и это текущий запуск
     if(!_trainerActive) return;
     setTimeout(() => {
       if(_trainerActive) _trainerStartListening();
