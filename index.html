@@ -7,27 +7,6 @@ Licensed under the MIT License-->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Аппликатура кларнета</title>
-
-<!-- Или для разных форматов -->
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="shortcut icon" href="/favicon.ico">
-
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-    (function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=108202733', 'ym');
-
-    ym(108202733, 'init', {ssr:true, webvisor:true, clickmap:true, referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
-</script>
-<noscript><div><img src="https://mc.yandex.ru/watch/108202733" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<!-- /Yandex.Metrika counter -->
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0}
@@ -342,6 +321,81 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .nb-text  { flex: 1; }
   .nb-ru    { flex: 1; align-items: flex-start; padding-left: 6px; padding-right: 0; }
 }
+
+/* ── ЭКСПЕРИМЕНТ: ГАММЫ КАК ПОСТОЯННОЕ ПРАВОЕ МЕНЮ (Шаг 1) ─────────────── */
+/* Действует только на больших экранах (>=1501px). Мобильную/среднюю        */
+/* вёрстку не затрагивает. Полностью откатывается удалением этого блока.     */
+@media (min-width: 1501px) {
+  /* Резервируем 260px справа под пристыкованное меню гамм */
+  .app-body { padding-right: 260px; }
+
+  /* Бургер не нужен — меню всегда открыто */
+  #MENU_BTN { display: none; }
+
+  /* Оверлей-меню превращаем в правую колонку у самого края */
+  #SIDE_MENU {
+    display: block !important;   /* перебивает inline display:none из closeMenu() */
+    position: fixed;
+    left: auto; right: 0;
+    top: 38px;                   /* высота .app-header на десктопе */
+    bottom: 0;
+    width: 260px;
+    background: transparent;     /* без затемнения */
+    z-index: 40;                 /* ниже модалок (9999), выше контента */
+  }
+  #SIDE_MENU .side-menu-panel {
+    width: 260px;
+    height: 100%;
+    animation: none;             /* без слайд-анимации в постоянном режиме */
+    box-shadow: none;
+    border-left: 1px solid #e0ddd8;
+  }
+  #SIDE_MENU .side-menu-header { display: none; }  /* строка «Меню» и крестик не нужны */
+}
+
+/* ── КОЛОНКА НОТ ГАММЫ «C» (Шаг 2) ───────────────────────────────────── */
+/* Раскладка при выбранной гамме (body.scale-active), экраны >=1501px:       */
+/*   A — меню нот · B — схема · C — ноты гаммы · D — меню гамм.               */
+/* 4 непересекающиеся колонки под шапкой. C — реальная колонка (не модалка), */
+/* B ужимается. C и B делят «середину» пополам и растут вместе.              */
+/* Место резервируется паддингом (наложений нет). Позиция !important —        */
+/* перебивает инлайн-стили модалки. Откат: блок + 2 хука.                    */
+@media (min-width: 1501px) {
+  /* Резерв справа = меню гамм (260) + колонка нот (половина середины) */
+  body.scale-active .app-body {
+    padding-right: calc(260px + (100vw - 520px) / 2);
+  }
+
+  /* C: колонка нот между схемой (B) и меню гамм (D) */
+  body.scale-active #NOTES_MODAL {
+    display: block !important;                 /* всегда видна при выбранной гамме */
+    background: #fff !important;               /* обычная колонка, без затемнения */
+    left: auto !important; right: 260px !important;   /* впритык к меню гамм (D) */
+    top: 38px !important;                       /* под шапкой */
+    bottom: 0 !important;
+    width: calc((100vw - 520px) / 2) !important;
+    z-index: 39 !important;                     /* под меню гамм (40) и модалками (9999) */
+  }
+  body.scale-active #NOTES_MODAL > div {        /* карточку -> заполняет колонку */
+    width: 100% !important; height: 100% !important;
+    max-width: none !important; max-height: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border-left: 1px solid #e0ddd8;             /* разделитель со схемой (B) */
+    padding: 14px 16px !important;
+    overflow-y: auto;
+  }
+  body.scale-active #NOTES_MODAL > div > button { display: none; }  /* крестик не нужен */
+}
+
+/* ── Шаг 3: активная гамма в меню (D) + кликабельные виды в блоке нот (C) ── */
+.side-menu-item.smi-active { background:#EBF2FA; color:#185FA5; font-weight:600; }
+.side-menu-item.smi-active .smi-keys { color:#185FA5; }
+/* Кликабельные названия видов гаммы в блоке нот (только большой режим) */
+.cvar-head { cursor:pointer; padding:2px 8px; border-radius:6px; transition:background .12s, color .12s; }
+.cvar-head:hover { background:#f0ece6; color:#185FA5; }
+.cvar-head.cvar-active { background:#EBF2FA; color:#185FA5; }
+.cvar-head.cvar-active::before { content:"\2713\00a0"; }
 </style>
 </head>
 <body>
@@ -1188,7 +1242,7 @@ const L_ru = {
   // ── Модалки «О программе» и «Обновления»: контент целым блоком ──
   // Для перевода: заменить эти два блока на переведённые (логика и разметка не трогаются).
   aboutBody: `      <div style="font-size:18px;font-weight:600;color:#333;margin-bottom:4px">Мой Кларнет B♭</div>
-      <div style="font-size:13px;color:#888;margin-bottom:14px">Аппликатура кларнета · v.23</div>
+      <div style="font-size:13px;color:#888;margin-bottom:14px">Аппликатура кларнета · v.24</div>
       <div style="font-size:12px;color:#666;line-height:1.6;text-align:left;margin-bottom:18px;padding:0 4px">
         Бесплатное приложение для изучения игры на кларнете.<br><br>
         • Аппликатура кларнета<br>
@@ -1213,7 +1267,16 @@ const L_ru = {
       <div style="font-size:13px;color:#888;margin-bottom:14px">История версий</div>
       <div style="font-size:12px;color:#666;line-height:1.8;text-align:left;padding:0 4px">
         <div style="margin-bottom:12px">
-          <span style="font-weight:600;color:#185FA5">v.23</span> <span style="color:#999">— текущая</span><br>
+          <span style="font-weight:600;color:#185FA5">v.24</span> <span style="color:#999">— текущая</span><br>
+          <div style="margin-top:4px">
+          • На больших экранах меню гамм и блок нот выбранной гаммы закреплены постоянно<br>
+          • Клик по ноте на нотном стане показывает её аппликатуру на основной схеме и подсвечивает ноту красным<br>
+          • Клик по ноте в левом меню подсвечивает её на стане выбранного вида гаммы<br>
+          • Переключение вида гаммы прямо в блоке нот
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <span style="font-weight:600;color:#555">v.23</span><br>
           <div style="margin-top:4px">
           • Оптимизация адаптивной вёрстки
           </div>
@@ -1428,7 +1491,7 @@ const L_en = {
 
   // ── About / Updates modals: whole HTML blocks ──
   aboutBody: `      <div style="font-size:18px;font-weight:600;color:#333;margin-bottom:4px">My Clarinet B♭</div>
-      <div style="font-size:13px;color:#888;margin-bottom:14px">Clarinet fingering · v.23</div>
+      <div style="font-size:13px;color:#888;margin-bottom:14px">Clarinet fingering · v.24</div>
       <div style="font-size:12px;color:#666;line-height:1.6;text-align:left;margin-bottom:18px;padding:0 4px">
         A free app for learning to play the clarinet.<br><br>
         • Clarinet fingering<br>
@@ -1453,7 +1516,16 @@ const L_en = {
       <div style="font-size:13px;color:#888;margin-bottom:14px">Version history</div>
       <div style="font-size:12px;color:#666;line-height:1.8;text-align:left;padding:0 4px">
         <div style="margin-bottom:12px">
-          <span style="font-weight:600;color:#185FA5">v.23</span> <span style="color:#999">— current</span><br>
+          <span style="font-weight:600;color:#185FA5">v.24</span> <span style="color:#999">— current</span><br>
+          <div style="margin-top:4px">
+          • On large screens the scales menu and the selected scale’s notes block are pinned permanently<br>
+          • Tapping a note on the staff shows its fingering on the main diagram and highlights the note in red<br>
+          • Tapping a note in the left menu highlights it on the staff of the selected scale variant<br>
+          • Switching the scale variant directly in the notes block
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <span style="font-weight:600;color:#555">v.23</span><br>
           <div style="margin-top:4px">
           • Adaptive layout optimization
           </div>
@@ -1578,7 +1650,7 @@ function buildSideMenu(){
   SCALE_MENU.forEach(function(s){
     h += '<div class="side-menu-section">'+L[s.sec]+'</div>';
     s.scales.forEach(function(it){
-      h += '<button class="side-menu-item" onclick="closeMenu();showScale(\''+it[0]+'\')"><span style="'+ic+'">\ud83c\udfb5</span><span>'+getScaleName(it[0])+'</span><span class="smi-keys">'+it[1]+'</span></button>';
+      h += '<button class="side-menu-item" data-scale="'+it[0]+'" onclick="closeMenu();showScale(\''+it[0]+'\')"><span style="'+ic+'">\ud83c\udfb5</span><span>'+getScaleName(it[0])+'</span><span class="smi-keys">'+it[1]+'</span></button>';
     });
   });
   h += '<div class="side-menu-divider"></div>';
@@ -1715,7 +1787,7 @@ NOTES.forEach((note,i)=>{
   const ruBlock='<div class="nb-ru">'+'<span style="color:'+tc+'">'+ruName+'</span>'+(ruNameAlt?'<span class="enh" style="color:'+ac+'">'+ruNameAlt+'</span>':'')+'</div>';
   const textDiv='<div class="nb-text">'+noteBlock+ruBlock+'<span class="scale-deg sd-desk"></span></div>';
   b.innerHTML=staffDiv+'<span class="scale-deg sd-mob"></span>'+textDiv;
-  b.onclick=()=>sel(i);
+  b.onclick=()=>{ sel(i); if (document.body.classList.contains('scale-active') && window.matchMedia('(min-width:1501px)').matches) _hlLeftNoteInScale(i); };
   nl.appendChild(b);
 });
 }
@@ -3348,7 +3420,7 @@ function makeScaleStaffSVG(scaleNotes, keySignature, octaves, fullOnly, descendi
     svg += '<text x="' + cx + '" y="10" font-size="8" font-weight="500" fill="#999" text-anchor="middle">' + noteName + oct + '</text>';
 
     // Прозрачная зона нажатия на всю колонку ноты (название + головка) для быстрого предпросмотра аппликатуры
-    hitRects += '<rect class="fp-hit" data-note="' + noteName + '" data-oct="' + oct + '" x="' + (cx - noteSpacing / 2) + '" y="0" width="' + noteSpacing + '" height="' + H + '" fill="transparent" style="cursor:pointer"/>';
+    hitRects += '<rect class="fp-hit" data-note="' + noteName + '" data-oct="' + oct + '" data-nidx="' + idx + '" x="' + (cx - noteSpacing / 2) + '" y="0" width="' + noteSpacing + '" height="' + H + '" fill="transparent" style="cursor:pointer"/>';
   });
 
   svg += hitRects;
@@ -3414,6 +3486,7 @@ function toggleNotesOct(oct) {
 function renderNotesModal() {
   stopScalePlay();
   if (!_activeScale) return;
+  var bigMode = document.body.classList.contains('scale-active') && window.matchMedia('(min-width:1501px)').matches;  // Шаг 3: большой режим
   var base = SCALES[_activeScale];
   if (!base) return;
 
@@ -3453,7 +3526,12 @@ function renderNotesModal() {
 
     html += '<div style="margin-bottom:2px">';
     html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
-    html += '<div style="font-size:12px;font-weight:600;color:#555;letter-spacing:.03em;flex:1">' + v.label;
+    html += '<div style="font-size:12px;font-weight:600;color:#555;letter-spacing:.03em;flex:1">';
+    if (bigMode) {
+      html += '<span class="cvar-head' + (v.id === _activeVariant ? ' cvar-active' : '') + '" onclick="selectVariant(\'' + v.id + '\')">' + v.label + '</span>';
+    } else {
+      html += v.label;
+    }
     // Переключатель джаз/классика для мелодического варианта при включённой нисходящей
     if (v.id === 'melodic' && _showDescending) {
       var jazzActive = !_melodicClassic;
@@ -3815,6 +3893,66 @@ function _fpFindFingerings(name, oct) {
   return null;
 }
 
+// Шаг 4: индекс ноты в NOTES по написанию+октаве (та же логика абсолютной высоты)
+function _scaleNoteToIndex(name, oct) {
+  var letter = name.charAt(0);
+  var realOct = oct;
+  if (letter === 'B' && name.indexOf('\u266f') >= 0) realOct++;
+  if (letter === 'C' && name.indexOf('\u266d') >= 0) realOct--;
+  var pitch = realOct * 12 + noteToSemitone(name);
+  for (var i = 0; i < NOTES.length; i++) {
+    if (NOTES[i].o * 12 + noteToSemitone(NOTES[i].n) === pitch) return i;
+  }
+  return -1;
+}
+
+// Шаг 5: подсветка ноты на стане в блоке нот (красным #E24B4A, как при проигрывании)
+function _pitchOfHit(rect) {
+  var nm = rect.getAttribute('data-note'), oc = parseInt(rect.getAttribute('data-oct'), 10);
+  var letter = nm.charAt(0), realOct = oc;
+  if (letter === 'B' && nm.indexOf('\u266f') >= 0) realOct++;
+  if (letter === 'C' && nm.indexOf('\u266d') >= 0) realOct--;
+  return realOct * 12 + noteToSemitone(nm);
+}
+function _clearNotesHl() {
+  document.querySelectorAll('#NOTES_MODAL_BODY [data-nidx].scale-hl').forEach(function(el){
+    el.classList.remove('scale-hl');
+    if (el.dataset.origFill) el.setAttribute('fill', el.dataset.origFill);
+    if (el.dataset.origStroke) el.setAttribute('stroke', el.dataset.origStroke);
+  });
+}
+function _hlInSvg(svg, nidx) {
+  if (!svg || nidx == null) return;
+  svg.querySelectorAll('[data-nidx="' + nidx + '"]').forEach(function(el){
+    if (el.tagName === 'rect') return;   // хит-зона — не подсвечиваем
+    el.classList.add('scale-hl');
+    if (!el.dataset.origFill) el.dataset.origFill = el.getAttribute('fill') || '#111';
+    if (!el.dataset.origStroke) el.dataset.origStroke = el.getAttribute('stroke') || '#111';
+    if (el.tagName === 'ellipse') el.setAttribute('fill', '#E24B4A');
+    if (el.tagName === 'line') el.setAttribute('stroke', '#E24B4A');
+  });
+}
+function _hlNoteByPitchIn(containerEl, pitch) {
+  if (!containerEl) return false;
+  var svg = containerEl.querySelector('svg');
+  if (!svg) return false;
+  var rects = svg.querySelectorAll('rect.fp-hit[data-nidx]');
+  for (var i = 0; i < rects.length; i++) {
+    if (_pitchOfHit(rects[i]) === pitch) { _hlInSvg(svg, rects[i].getAttribute('data-nidx')); return true; }
+  }
+  return false;
+}
+// Подсветка ноты левого меню на стане активного вида гаммы (если она в нём есть)
+function _hlLeftNoteInScale(noteIdx) {
+  _clearNotesHl();
+  var n = NOTES[noteIdx]; if (!n) return;
+  var pitch = n.o * 12 + noteToSemitone(n.n);
+  var asc = document.querySelector('#NOTES_MODAL_BODY [data-variant="' + _activeVariant + '"]');
+  var desc = document.querySelector('#NOTES_MODAL_BODY [data-variant-desc="' + _activeVariant + '"]');
+  _hlNoteByPitchIn(asc, pitch);
+  _hlNoteByPitchIn(desc, pitch);
+}
+
 var _fpOverlay = null, _fpClone = null, _fpName = null, _fpBadge = null;
 
 function _fpBuild() {
@@ -3884,7 +4022,19 @@ function _fpHide() {
   body.addEventListener('click', function(e) {
     var hit = e.target.closest ? e.target.closest('[data-note]') : null;
     if (!hit) return;
-    _fpShow(hit.getAttribute('data-note'), parseInt(hit.getAttribute('data-oct'), 10));
+    var _nm = hit.getAttribute('data-note');
+    var _oc = parseInt(hit.getAttribute('data-oct'), 10);
+    // Шаг 4: в большом режиме — аппликатура на основной схеме (как клик в левом меню)
+    var _big = document.body.classList.contains('scale-active') && window.matchMedia('(min-width:1501px)').matches;
+    if (_big) {
+      var _idx = _scaleNoteToIndex(_nm, _oc);
+      if (_idx >= 0) sel(_idx);                       // в диапазоне левого меню → на схему
+      _clearNotesHl();                                 // Шаг 5: подсветить кликнутую ноту красным
+      var _svg = hit.closest ? hit.closest('svg') : null;
+      if (_svg) _hlInSvg(_svg, hit.getAttribute('data-nidx'));
+      return;
+    }
+    _fpShow(_nm, _oc);
   });
 })();
 
@@ -4026,6 +4176,18 @@ function showScale(scaleId, variant) {
 
   const first = document.querySelector('.nb.scale-note');
   if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+  // Шаг 2: наполняем постоянную колонку нот «C» (видимость — через CSS на >=1501px)
+  document.body.classList.add('scale-active');
+  document.querySelectorAll('#MENU_ITEMS .side-menu-item[data-scale]').forEach(function(b){
+    b.classList.toggle('smi-active', b.dataset.scale === scaleId);   // Шаг 3: активная гамма в меню
+  });
+  var _nt = document.getElementById('NOTES_MODAL_TITLE');
+  if (_nt) _nt.textContent = getScaleName(_activeScale) + ' \u2014 ' + L.notesItem;
+  document.querySelectorAll('#NOTES_OCT_BAR .oct-btn').forEach(function(b){
+    var o = parseInt(b.dataset.oct); b.classList.toggle('active', _notesOctaves.includes(o));
+  });
+  renderNotesModal();
 }
 
 function clearScaleHighlight() {
@@ -4056,6 +4218,10 @@ function clearScaleHighlight() {
 function clearScale() {
   _activeScale = null;
   _activeVariant = 'natural';
+  document.body.classList.remove('scale-active');   // Шаг 2: убрать колонку нот
+  document.querySelectorAll('#MENU_ITEMS .side-menu-item.smi-active').forEach(function(b){ b.classList.remove('smi-active'); });  // Шаг 3
+  { var _nm = document.getElementById('NOTES_MODAL');
+    if (_nm) { if (typeof stopScalePlay === 'function') stopScalePlay(); _nm.style.display = 'none'; } }
   clearScaleHighlight();
   const left = document.getElementById('LEFT');
   if (left) left.classList.remove('scale-mode');
